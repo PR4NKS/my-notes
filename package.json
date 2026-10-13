@@ -1,0 +1,39 @@
+{
+  "name": "pranks-notes",
+  "version": "1.0.0",
+  "description": "Pranks - Cybersecurity Knowledge Base & Technical Guides",
+  "main": "server/server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server/server.js",
+    "server": "node server/server.js",
+    "client": "npm run dev --prefix client",
+    "build": "npm --prefix client install && npm --prefix client run build",
+    "dev": "concurrently -n \"server,client\" -c \"blue,green\" \"node server/server.js\" \"npm run dev --prefix client\""
+  },
+  "keywords": [
+    "cybersecurity",
+    "notes",
+    "knowledge-base",
+    "bug-bounty",
+    "active-directory",
+    "ctf",
+    "documentation"
+  ],
+  "author": "Pranks",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "better-sqlite3": "^13.0.3",
+    "concurrently": "^9.1.2",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.7",
+    "express": "^5.3.0",
+    "express-rate-limit": "^8.7.1",
+    "helmet": "^8.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "mammoth": "^1.13.0",
+    "multer": "^2.4.0"
+  }
+}
