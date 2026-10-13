@@ -66,7 +66,10 @@ app.get('/api/health', (req, res) => {
 });
 
 // Serve built frontend if dist exists (Render & local production)
-const clientDistPath = path.join(__dirname, '..', 'client', 'dist');
+let clientDistPath = path.join(__dirname, '..', 'client', 'dist');
+if (!fs.existsSync(clientDistPath)) {
+  clientDistPath = path.join(__dirname, '..', 'dist');
+}
 if (fs.existsSync(clientDistPath)) {
   app.use(express.static(clientDistPath));
   app.use((req, res, next) => {
