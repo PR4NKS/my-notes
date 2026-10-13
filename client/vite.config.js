@@ -8,20 +8,7 @@ export default defineConfig({
     tailwindcss(),
   ],
   build: {
-    chunkSizeWarningLimit: 1600,
-    rollupOptions: {
-      output: {
-        manualChunks(id) {
-          if (id.includes('node_modules')) {
-            if (id.includes('katex')) return 'katex';
-            if (id.includes('prismjs')) return 'prism';
-            if (id.includes('d3')) return 'd3';
-            if (id.includes('react') || id.includes('scheduler')) return 'react-vendor';
-            return 'vendor';
-          }
-        }
-      }
-    }
+    chunkSizeWarningLimit: 2000,
   },
   server: {
     port: 5173,
