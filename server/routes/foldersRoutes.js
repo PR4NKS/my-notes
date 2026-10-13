@@ -69,8 +69,30 @@ router.get('/', optionalAuth, (req, res) => {
       }
     });
 
+    // Deduplicate children across each folder
+    Object.values(folderMap).forEach(folder => {
+      const seen = new Set();
+      folder.children = folder.children.filter(child => {
+        const key = child.name.toLowerCase().trim();
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+    });
+
+    // Deduplicate root folders
+    const uniqueRoots = [];
+    const seenRoots = new Set();
+    for (const r of rootFolders) {
+      const key = r.name.toLowerCase().trim();
+      if (!seenRoots.has(key)) {
+        seenRoots.add(key);
+        uniqueRoots.push(r);
+      }
+    }
+
     res.json({
-      tree: rootFolders,
+      tree: uniqueRoots,
       all: folders.map(f => ({ ...f, noteCount: countMap[f.id] || 0 }))
     });
   } catch (err) {

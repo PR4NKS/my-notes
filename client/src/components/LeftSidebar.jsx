@@ -49,7 +49,17 @@ export default function LeftSidebar({
   const renderFolderItem = (folder, depth = 0) => {
     const isOpen = !!openFolders[folder.id];
     const folderNotes = notesByFolder[folder.id] || [];
-    const hasChildren = (folder.children && folder.children.length > 0) || folderNotes.length > 0;
+
+    // Deduplicate children by lower name
+    const seenChildNames = new Set();
+    const uniqueChildren = (folder.children || []).filter(c => {
+      const k = c.name.toLowerCase().trim();
+      if (seenChildNames.has(k)) return false;
+      seenChildNames.add(k);
+      return true;
+    });
+
+    const hasChildren = uniqueChildren.length > 0 || folderNotes.length > 0;
     const paddingLeft = `${depth * 14 + 6}px`;
 
     return (
@@ -80,7 +90,7 @@ export default function LeftSidebar({
         {isOpen && (
           <div className="flex flex-col">
             {/* Subfolders */}
-            {folder.children && folder.children.map(child => renderFolderItem(child, depth + 1))}
+            {uniqueChildren.map(child => renderFolderItem(child, depth + 1))}
 
             {/* Notes inside this folder */}
             {folderNotes.map(note => {
@@ -231,7 +241,15 @@ export default function LeftSidebar({
             })}
 
             {/* Folders tree */}
-            {foldersTree.map(folder => renderFolderItem(folder))}
+            {(() => {
+              const seenRootNames = new Set();
+              return foldersTree.filter(f => {
+                const k = f.name.toLowerCase().trim();
+                if (seenRootNames.has(k)) return false;
+                seenRootNames.add(k);
+                return true;
+              }).map(folder => renderFolderItem(folder));
+            })()}
           </div>
         )}
       </div>

@@ -56,16 +56,28 @@ export function syncLocalCyberNotes() {
           displayName = 'Cheatsheets';
         }
 
-        let folderSlug = `folder-${slugify(entry.name)}-${crypto.createHash('md5').update(fullPath).digest('hex').slice(0, 6)}`;
-        if (lowerName.includes('bug bounty')) {
-          folderSlug = 'folder-bug-bountynotes-dce2cc';
-        }
+        const relPath = path.relative(rootCyberNotesDir, fullPath).replace(/\\/g, '/');
 
-        const existing = db.prepare('SELECT id FROM folders WHERE id = ?').get(folderSlug);
-        if (!existing) {
-          insertFolder.run(folderSlug, displayName, targetParentId, 0);
-        } else {
+        // Check if folder already exists by display name and parent
+        let existing = targetParentId
+          ? db.prepare('SELECT id FROM folders WHERE LOWER(name) = LOWER(?) AND parent_id = ?').get(displayName, targetParentId)
+          : db.prepare('SELECT id FROM folders WHERE LOWER(name) = LOWER(?) AND parent_id IS NULL').get(displayName);
+
+        let folderSlug;
+        if (existing) {
+          folderSlug = existing.id;
           db.prepare('UPDATE folders SET name = ?, parent_id = ? WHERE id = ?').run(displayName, targetParentId, folderSlug);
+        } else {
+          folderSlug = lowerName.includes('bug bounty') 
+            ? 'folder-bug-bountynotes-dce2cc' 
+            : `folder-${slugify(entry.name)}-${crypto.createHash('md5').update(relPath).digest('hex').slice(0, 6)}`;
+          
+          const bySlug = db.prepare('SELECT id FROM folders WHERE id = ?').get(folderSlug);
+          if (bySlug) {
+            folderSlug = bySlug.id;
+          } else {
+            insertFolder.run(folderSlug, displayName, targetParentId, 0);
+          }
         }
         walkDir(fullPath, folderSlug);
       } else if (entry.isFile() && (entry.name.endsWith('.md') || entry.name.endsWith('.txt'))) {
@@ -74,7 +86,6 @@ export function syncLocalCyberNotes() {
           const ext = path.extname(entry.name);
           const baseName = path.basename(entry.name, ext);
           const noteSlug = slugify(baseName) || `note-${Date.now()}`;
-          const noteId = `note-local-${crypto.createHash('md5').update(fullPath).digest('hex').slice(0, 8)}`;
 
           // Infer title from first markdown header if available
           let noteTitle = baseName;
@@ -82,6 +93,11 @@ export function syncLocalCyberNotes() {
           if (firstHeader && firstHeader[1]) {
             noteTitle = firstHeader[1].replace(/[🛡️📌🎯⚡🚩]/g, '').trim() || baseName;
           }
+
+          // Check if note already exists in this folder
+          const existingNote = db.prepare('SELECT id FROM notes WHERE folder_id = ? AND (LOWER(title) = LOWER(?) OR slug = ?)').get(folderSlug, noteTitle, noteSlug);
+          const relFilePath = path.relative(rootCyberNotesDir, fullPath).replace(/\\/g, '/');
+          const noteId = existingNote ? existingNote.id : `note-local-${crypto.createHash('md5').update(relFilePath).digest('hex').slice(0, 8)}`;
 
           const readingTime = calculateReadingTime(content);
           const excerpt = content.replace(/[#*`_~\[\]]/g, '').slice(0, 180).trim();

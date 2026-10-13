@@ -119,6 +119,34 @@ export function initDb() {
 
   seedInitialData();
   syncLocalCyberNotes();
+  deduplicateFolders();
+}
+
+// Automatic database cleanup for duplicate folders across deployments
+export function deduplicateFolders() {
+  try {
+    const allFolders = db.prepare('SELECT id, name, parent_id FROM folders ORDER BY rowid ASC').all();
+    const seen = new Map();
+
+    for (const f of allFolders) {
+      const key = `${f.name.toLowerCase().trim()}:::${f.parent_id || 'ROOT'}`;
+      if (!seen.has(key)) {
+        seen.set(key, f.id);
+      } else {
+        const primaryId = seen.get(key);
+        const dupId = f.id;
+        // Reassign any notes from duplicate folder to primary folder
+        db.prepare('UPDATE notes SET folder_id = ? WHERE folder_id = ?').run(primaryId, dupId);
+        // Reassign any child folders from duplicate folder to primary folder
+        db.prepare('UPDATE folders SET parent_id = ? WHERE parent_id = ?').run(primaryId, dupId);
+        // Delete the duplicate folder
+        db.prepare('DELETE FROM folders WHERE id = ?').run(dupId);
+        console.log(`[Deduplicate] Merged duplicate folder "${f.name}" (${dupId} -> ${primaryId})`);
+      }
+    }
+  } catch (err) {
+    console.error('[Deduplicate Error]', err.message);
+  }
 }
 
 // Function to calculate estimated reading time
