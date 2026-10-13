@@ -95,7 +95,9 @@ export function syncLocalCyberNotes() {
           }
 
           // Check if note already exists in this folder
-          const existingNote = db.prepare('SELECT id FROM notes WHERE folder_id = ? AND (LOWER(title) = LOWER(?) OR slug = ?)').get(folderSlug, noteTitle, noteSlug);
+          const existingNote = parentFolderId
+            ? db.prepare('SELECT id FROM notes WHERE folder_id = ? AND (LOWER(title) = LOWER(?) OR slug = ?)').get(parentFolderId, noteTitle, noteSlug)
+            : db.prepare('SELECT id FROM notes WHERE folder_id IS NULL AND (LOWER(title) = LOWER(?) OR slug = ?)').get(noteTitle, noteSlug);
           const relFilePath = path.relative(rootCyberNotesDir, fullPath).replace(/\\/g, '/');
           const noteId = existingNote ? existingNote.id : `note-local-${crypto.createHash('md5').update(relFilePath).digest('hex').slice(0, 8)}`;
 

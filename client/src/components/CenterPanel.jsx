@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
   Calendar, Clock, Edit3, Share2, Tag, FileText, 
-  Download, Eye, CheckCircle2, AlertCircle, FileCode, Trash2
+  Download, Eye, CheckCircle2, AlertCircle, FileCode, Trash2, Video
 } from 'lucide-react';
 import MarkdownRenderer from './MarkdownRenderer.jsx';
 
@@ -69,6 +69,11 @@ export default function CenterPanel({
   }
 
   const pdfAttachments = (note.attachments || []).filter(a => a.mime_type === 'application/pdf');
+  const videoAttachments = (note.attachments || []).filter(a => {
+    const isVideo = (a.mime_type || '').startsWith('video/') || /\.(mp4|webm|ogg|mov|mkv|avi|m4v)$/i.test(a.original_name || '');
+    const isAlreadyEmbedded = (note.content || '').includes(a.storage_path) || (note.content || '').includes(a.filename);
+    return isVideo && !isAlreadyEmbedded;
+  });
 
   return (
     <main className="flex-1 flex flex-col h-full bg-[#cbd5e1] dark:bg-[#0f172a] overflow-y-auto">
@@ -185,6 +190,44 @@ export default function CenterPanel({
                     title={att.original_name}
                     className="w-full h-[500px] border-0"
                   />
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Embedded Attached Videos if any */}
+        {videoAttachments.length > 0 && (
+          <div className="mt-8 pt-6 border-t border-slate-300 dark:border-slate-800">
+            <h3 className="text-base font-semibold text-slate-800 dark:text-slate-200 mb-4 flex items-center gap-2">
+              <Video className="w-4 h-4 text-[#881337] dark:text-[#fda4af]" />
+              <span>Attached Videos ({videoAttachments.length})</span>
+            </h3>
+            <div className="flex flex-col gap-4">
+              {videoAttachments.map((att) => (
+                <div key={att.id} className="rounded-xl border border-slate-300 dark:border-slate-700 overflow-hidden bg-slate-950 shadow-md">
+                  <div className="flex items-center justify-between p-3 bg-slate-900 border-b border-slate-800 text-xs text-slate-300 font-medium">
+                    <span className="truncate">{att.original_name}</span>
+                    <a
+                      href={att.storage_path}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      download
+                      className="flex items-center gap-1 text-rose-400 hover:text-rose-300 transition shrink-0 ml-2"
+                    >
+                      <Download className="w-3.5 h-3.5" />
+                      <span>Download</span>
+                    </a>
+                  </div>
+                  <video
+                    controls
+                    preload="metadata"
+                    playsInline
+                    className="w-full max-h-[500px] block bg-black mx-auto"
+                  >
+                    <source src={att.storage_path} />
+                    Your browser does not support HTML5 video.
+                  </video>
                 </div>
               ))}
             </div>

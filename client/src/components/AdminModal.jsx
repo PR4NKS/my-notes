@@ -3,7 +3,7 @@ import {
   X, Lock, Shield, LayoutDashboard, FileText, Upload, 
   FolderPlus, Trash2, Key, LogOut, CheckCircle2, 
   AlertCircle, Loader2, ArrowLeft, Eye, Save, Plus, 
-  FileUp, RefreshCw, BarChart3, Clock, AlertTriangle, Image as ImageIcon
+  FileUp, RefreshCw, BarChart3, Clock, AlertTriangle, Image as ImageIcon, Video
 } from 'lucide-react';
 import { authApi, notesApi, foldersApi, uploadApi, adminApi } from '../api.js';
 import MarkdownRenderer from './MarkdownRenderer.jsx';
@@ -43,8 +43,10 @@ export default function AdminModal({
   const [editIsPinned, setEditIsPinned] = useState(false);
   const [isEditorPreview, setIsEditorPreview] = useState(false);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isUploadingMedia, setIsUploadingMedia] = useState(false);
   const textareaRef = useRef(null);
   const imageInputRef = useRef(null);
+  const videoInputRef = useRef(null);
 
   // Upload state
   const [uploadFiles, setUploadFiles] = useState([]);
@@ -127,47 +129,58 @@ export default function AdminModal({
     }
   };
 
-  // Automatic Image Upload and Markdown Insertion (Paste / Drop / Pick)
-  const uploadAndInsertImage = async (file) => {
+  // Automatic Media (Image & Video) Upload and Markdown Insertion
+  const uploadAndInsertMedia = async (file, explicitType = 'auto') => {
     if (!file) return;
-    setIsUploadingImage(true);
+    const isVideo = explicitType === 'video' || (file.type && file.type.startsWith('video/')) || /\.(mp4|webm|ogg|mov|mkv|avi|m4v)$/i.test(file.name || '');
+
+    if (isVideo) {
+      setIsUploadingMedia(true);
+    } else {
+      setIsUploadingImage(true);
+    }
     setErrorMsg('');
 
     const textarea = textareaRef.current;
     const start = textarea ? textarea.selectionStart : editContent.length;
     const end = textarea ? textarea.selectionEnd : editContent.length;
 
-    const imageName = file.name || `image_${Date.now()}.png`;
-    const placeholder = `\n![Uploading ${imageName}...]()\n`;
+    const mediaName = file.name || (isVideo ? `video_${Date.now()}.mp4` : `image_${Date.now()}.png`);
+    const placeholder = `\n![Uploading ${isVideo ? 'video ' : ''}${mediaName}...]()\n`;
 
     const nextContent = editContent.substring(0, start) + placeholder + editContent.substring(end);
     setEditContent(nextContent);
 
     try {
       const data = await uploadApi.uploadFile(file, editId || null);
-      const imageUrl = data.file.url || data.file.storage_path;
-      const markdownImage = `\n![${imageName}](${imageUrl})\n`;
+      const mediaUrl = data.file.url || data.file.storage_path;
+      const markdownMedia = `\n![${mediaName}](${mediaUrl})\n`;
 
-      setEditContent((prev) => prev.replace(placeholder, markdownImage));
-      setSuccessMsg(`Image uploaded: ${imageName}`);
+      setEditContent((prev) => prev.replace(placeholder, markdownMedia));
+      setSuccessMsg(`${isVideo ? 'Video' : 'Image'} uploaded: ${mediaName}`);
     } catch (err) {
-      setErrorMsg(`Failed to upload image: ${err.message}`);
+      setErrorMsg(`Failed to upload ${isVideo ? 'video' : 'image'}: ${err.message}`);
       setEditContent((prev) => prev.replace(placeholder, ''));
     } finally {
       setIsUploadingImage(false);
+      setIsUploadingMedia(false);
     }
   };
+
+  const uploadAndInsertImage = (file) => uploadAndInsertMedia(file, 'image');
+  const uploadAndInsertVideo = (file) => uploadAndInsertMedia(file, 'video');
 
   const handlePaste = (e) => {
     const items = e.clipboardData?.items;
     if (!items) return;
 
     for (let i = 0; i < items.length; i++) {
-      if (items[i].type && items[i].type.startsWith('image/')) {
+      const type = items[i].type || '';
+      if (type.startsWith('image/') || type.startsWith('video/')) {
         e.preventDefault();
         const file = items[i].getAsFile();
         if (file) {
-          uploadAndInsertImage(file);
+          uploadAndInsertMedia(file, type.startsWith('video/') ? 'video' : 'image');
         }
         return;
       }
@@ -178,9 +191,14 @@ export default function AdminModal({
     const files = e.dataTransfer?.files;
     if (files && files.length > 0) {
       for (let i = 0; i < files.length; i++) {
-        if (files[i].type && files[i].type.startsWith('image/')) {
+        const type = files[i].type || '';
+        const name = files[i].name || '';
+        const isVideo = type.startsWith('video/') || /\.(mp4|webm|ogg|mov|mkv|avi|m4v)$/i.test(name);
+        const isImage = type.startsWith('image/') || /\.(png|jpe?g|webp|gif|svg)$/i.test(name);
+
+        if (isVideo || isImage) {
           e.preventDefault();
-          uploadAndInsertImage(files[i]);
+          uploadAndInsertMedia(files[i], isVideo ? 'video' : 'image');
           return;
         }
       }
@@ -821,15 +839,16 @@ export default function AdminModal({
                   </div>
                 </div>
 
-                {/* Editor Toolbar with Automatic Image Paste & Upload */}
-                <div className="flex items-center justify-between px-1 py-1 text-xs text-slate-500 border-b border-slate-200 dark:border-slate-800">
-                  <div className="flex items-center gap-2">
+                {/* Editor Toolbar with Automatic Media (Image & Video) Upload */}
+                <div className="flex flex-wrap items-center justify-between px-1 py-1 text-xs text-slate-500 border-b border-slate-200 dark:border-slate-800 gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
+                    {/* Image Upload Button */}
                     <button
                       type="button"
                       onClick={() => imageInputRef.current?.click()}
-                      disabled={isUploadingImage}
+                      disabled={isUploadingImage || isUploadingMedia}
                       className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition"
-                      title="Upload an image from local disk or paste directly into the box"
+                      title="Upload an image from local disk or paste directly into the editor"
                     >
                       <ImageIcon className="w-3.5 h-3.5 text-[#881337] dark:text-[#fda4af]" />
                       <span>{isUploadingImage ? 'Uploading Image...' : 'Insert / Upload Image'}</span>
@@ -846,15 +865,40 @@ export default function AdminModal({
                         }
                       }}
                     />
-                    {isUploadingImage && (
+
+                    {/* Video Upload Button */}
+                    <button
+                      type="button"
+                      onClick={() => videoInputRef.current?.click()}
+                      disabled={isUploadingImage || isUploadingMedia}
+                      className="flex items-center gap-1.5 px-2.5 py-1 rounded-md border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 hover:bg-slate-100 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition"
+                      title="Upload a video (.mp4, .webm, .mov, .mkv) or drag & drop directly into the editor"
+                    >
+                      <Video className="w-3.5 h-3.5 text-[#881337] dark:text-[#fda4af]" />
+                      <span>{isUploadingMedia ? 'Uploading Video...' : 'Insert / Upload Video'}</span>
+                    </button>
+                    <input
+                      ref={videoInputRef}
+                      type="file"
+                      accept="video/mp4,video/webm,video/ogg,video/quicktime,video/x-matroska,video/*"
+                      className="hidden"
+                      onChange={(e) => {
+                        if (e.target.files?.[0]) {
+                          uploadAndInsertVideo(e.target.files[0]);
+                          e.target.value = '';
+                        }
+                      }}
+                    />
+
+                    {(isUploadingImage || isUploadingMedia) && (
                       <span className="flex items-center gap-1.5 text-xs text-[#881337] dark:text-[#fda4af] font-medium">
                         <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                        <span>Uploading image to server...</span>
+                        <span>Uploading media to server...</span>
                       </span>
                     )}
                   </div>
                   <span className="hidden sm:inline text-[11px] text-slate-400">
-                    💡 Tip: Copy any image & press Ctrl+V to paste & upload automatically.
+                    💡 Tip: Paste (Ctrl+V) or drag & drop any image or video file directly.
                   </span>
                 </div>
 

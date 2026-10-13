@@ -90,9 +90,25 @@ export default function MarkdownRenderer({ content, onNavigateNote }) {
       return `<div class="table-wrapper">${defaultTable}</div>`;
     };
 
-    // Images with asset resolver
+    // Images and HTML5 Video playback with asset resolver
     renderer.image = function ({ href, title, text }) {
       const resolved = getAssetUrl(href);
+      const cleanHref = (href || '').split('?')[0].split('#')[0].toLowerCase();
+      const isVideo = ['.mp4', '.webm', '.ogg', '.mov', '.mkv', '.m4v'].some(ext => cleanHref.endsWith(ext));
+
+      if (isVideo) {
+        return `<div class="video-container my-4 rounded-xl overflow-hidden border border-slate-300 dark:border-slate-700 bg-slate-950 shadow-md">
+          <video controls preload="metadata" playsinline class="w-full max-h-[520px] rounded-t-xl block mx-auto bg-black" title="${title || text || 'Video playback'}">
+            <source src="${resolved}">
+            Your browser does not support HTML5 video. <a href="${resolved}" target="_blank" class="text-rose-400 underline">Download video</a>
+          </video>
+          ${text ? `<div class="px-3.5 py-2 text-xs text-slate-300 bg-slate-900 border-t border-slate-800 flex items-center justify-between">
+            <span class="font-medium truncate">${text}</span>
+            <a href="${resolved}" target="_blank" download class="text-[11px] text-rose-400 hover:text-rose-300 transition shrink-0 ml-2">Download</a>
+          </div>` : ''}
+        </div>`;
+      }
+
       return `<img src="${resolved}" alt="${text || ''}" title="${title || ''}" class="max-w-full rounded-lg my-3 border border-slate-200 dark:border-slate-700 shadow-sm" loading="lazy" />`;
     };
 
@@ -106,10 +122,14 @@ export default function MarkdownRenderer({ content, onNavigateNote }) {
     // Parse markdown
     const rawHtml = marked.parse(processed, { renderer, gfm: true, breaks: true });
 
-    // Sanitize with DOMPurify
+    // Sanitize with DOMPurify allowing videos and iframes
     return DOMPurify.sanitize(rawHtml, {
-      ADD_TAGS: ['iframe'],
-      ADD_ATTR: ['target', 'data-code', 'data-note-target'],
+      ADD_TAGS: ['iframe', 'video', 'source'],
+      ADD_ATTR: [
+        'target', 'data-code', 'data-note-target',
+        'controls', 'preload', 'autoplay', 'loop', 'muted', 
+        'playsinline', 'poster', 'allowfullscreen', 'frameborder'
+      ],
     });
   }, [content]);
 

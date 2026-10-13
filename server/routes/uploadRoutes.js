@@ -15,7 +15,8 @@ const ALLOWED_EXTENSIONS = new Set([
   '.md', '.markdown', '.txt',
   '.pdf',
   '.docx',
-  '.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg'
+  '.png', '.jpg', '.jpeg', '.webp', '.gif', '.svg',
+  '.mp4', '.webm', '.ogg', '.mov', '.mkv', '.avi', '.m4v'
 ]);
 
 function getExtension(file) {
@@ -26,6 +27,11 @@ function getExtension(file) {
     else if (file.mimetype === 'image/webp') ext = '.webp';
     else if (file.mimetype === 'image/gif') ext = '.gif';
     else if (file.mimetype === 'image/svg+xml') ext = '.svg';
+    else if (file.mimetype === 'video/mp4') ext = '.mp4';
+    else if (file.mimetype === 'video/webm') ext = '.webm';
+    else if (file.mimetype === 'video/ogg') ext = '.ogg';
+    else if (file.mimetype === 'video/quicktime') ext = '.mov';
+    else if (file.mimetype === 'video/x-matroska') ext = '.mkv';
   }
   return ext || '.png';
 }
@@ -33,9 +39,10 @@ function getExtension(file) {
 // Sanitize filename to prevent directory traversal
 function sanitizeFilename(file) {
   const ext = getExtension(file);
-  const rawName = file.originalname || 'pasted_image';
+  const isVideo = ['.mp4', '.webm', '.ogg', '.mov', '.mkv', '.avi', '.m4v'].includes(ext);
+  const rawName = file.originalname || (isVideo ? 'uploaded_video' : 'pasted_image');
   const rawBase = path.basename(rawName, path.extname(rawName));
-  const base = rawBase.replace(/[^a-zA-Z0-9_\-]/g, '_').slice(0, 60) || 'image';
+  const base = rawBase.replace(/[^a-zA-Z0-9_\-]/g, '_').slice(0, 60) || (isVideo ? 'video' : 'image');
   const randomSuffix = crypto.randomBytes(4).toString('hex');
   return `${base}_${Date.now()}_${randomSuffix}${ext}`;
 }
@@ -52,7 +59,7 @@ const storage = multer.diskStorage({
 const upload = multer({
   storage,
   limits: {
-    fileSize: 25 * 1024 * 1024 // 25 MB max limit
+    fileSize: 150 * 1024 * 1024 // 150 MB max limit for videos and attachments
   },
   fileFilter: (req, file, cb) => {
     const ext = getExtension(file);
