@@ -52,10 +52,11 @@ router.post('/setup', async (req, res) => {
     const admin = await createAdminUser(username.trim(), password);
     const token = generateToken({ id: admin.id, username: admin.username });
 
+    const sameSiteMode = process.env.COOKIE_SAMESITE || (process.env.NODE_ENV === 'production' ? 'none' : 'lax');
     res.cookie(TOKEN_COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: sameSiteMode,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -63,6 +64,7 @@ router.post('/setup', async (req, res) => {
 
     res.json({
       success: true,
+      token,
       message: 'Admin account initialized successfully.',
       user: { id: admin.id, username: admin.username }
     });
@@ -87,11 +89,12 @@ router.post('/login', loginLimiter, async (req, res) => {
     }
 
     const token = generateToken({ id: admin.id, username: admin.username });
+    const sameSiteMode = process.env.COOKIE_SAMESITE || (process.env.NODE_ENV === 'production' ? 'none' : 'lax');
 
     res.cookie(TOKEN_COOKIE_NAME, token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      sameSite: sameSiteMode,
       maxAge: 7 * 24 * 60 * 60 * 1000,
     });
 
@@ -99,6 +102,7 @@ router.post('/login', loginLimiter, async (req, res) => {
 
     res.json({
       success: true,
+      token,
       message: 'Authentication successful.',
       user: { id: admin.id, username: admin.username }
     });

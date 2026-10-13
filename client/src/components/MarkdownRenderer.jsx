@@ -12,6 +12,7 @@ import 'prismjs/components/prism-sql.js';
 import 'prismjs/components/prism-markdown.js';
 import katex from 'katex';
 import 'katex/dist/katex.min.css';
+import { getAssetUrl } from '../api.js';
 
 export function slugifyHeading(text) {
   return text
@@ -81,6 +82,12 @@ export default function MarkdownRenderer({ content, onNavigateNote }) {
         </div>
         <pre class="p-4 overflow-x-auto m-0 text-sm bg-slate-900"><code class="language-${language}">${highlighted}</code></pre>
       </div>`;
+    };
+
+    // Images with asset resolver
+    renderer.image = function ({ href, title, text }) {
+      const resolved = getAssetUrl(href);
+      return `<img src="${resolved}" alt="${text || ''}" title="${title || ''}" class="max-w-full rounded-lg my-3 border border-slate-200 dark:border-slate-700 shadow-sm" loading="lazy" />`;
     };
 
     // Wiki-links: [[Target Note]] or [[Target Note|Custom Text]]

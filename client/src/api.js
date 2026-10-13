@@ -1,12 +1,25 @@
 // API Client for Pranks Notes Platform
 
-const BASE_URL = '/api';
+const RAW_API_URL = import.meta.env.VITE_API_URL || '';
+export const API_BASE = RAW_API_URL ? RAW_API_URL.replace(/\/+$/, '') : '';
+export const BASE_URL = API_BASE ? (API_BASE.endsWith('/api') ? API_BASE : `${API_BASE}/api`) : '/api';
+
+export function getAssetUrl(url) {
+  if (!url) return '';
+  if (url.startsWith('http://') || url.startsWith('https://')) return url;
+  if (API_BASE && url.startsWith('/')) {
+    return `${API_BASE}${url}`;
+  }
+  return url;
+}
 
 export async function fetchJson(endpoint, options = {}) {
+  const token = localStorage.getItem('pranks_token');
   const res = await fetch(`${BASE_URL}${endpoint}`, {
     ...options,
     headers: {
       'Content-Type': 'application/json',
+      ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
       ...options.headers,
     },
     credentials: 'include',
@@ -24,15 +37,26 @@ export async function fetchJson(endpoint, options = {}) {
 // Auth API
 export const authApi = {
   getStatus: () => fetchJson('/auth/status'),
-  setup: (username, password) => fetchJson('/auth/setup', {
-    method: 'POST',
-    body: JSON.stringify({ username, password }),
-  }),
-  login: (username, password) => fetchJson('/auth/login', {
-    method: 'POST',
-    body: JSON.stringify({ username, password }),
-  }),
-  logout: () => fetchJson('/auth/logout', { method: 'POST' }),
+  setup: async (username, password) => {
+    const data = await fetchJson('/auth/setup', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    });
+    if (data.token) localStorage.setItem('pranks_token', data.token);
+    return data;
+  },
+  login: async (username, password) => {
+    const data = await fetchJson('/auth/login', {
+      method: 'POST',
+      body: JSON.stringify({ username, password }),
+    });
+    if (data.token) localStorage.setItem('pranks_token', data.token);
+    return data;
+  },
+  logout: async () => {
+    localStorage.removeItem('pranks_token');
+    return fetchJson('/auth/logout', { method: 'POST' });
+  },
   changePassword: (currentPassword, newPassword) => fetchJson('/auth/change-password', {
     method: 'POST',
     body: JSON.stringify({ currentPassword, newPassword }),
@@ -84,12 +108,17 @@ export const searchApi = {
 // Upload API
 export const uploadApi = {
   uploadFile: async (file, noteId) => {
+    const token = localStorage.getItem('pranks_token');
     const formData = new FormData();
     formData.append('file', file);
     if (noteId) formData.append('note_id', noteId);
 
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
     const res = await fetch(`${BASE_URL}/upload/file`, {
       method: 'POST',
+      headers,
       body: formData,
       credentials: 'include',
     });
@@ -98,13 +127,18 @@ export const uploadApi = {
     return data;
   },
   importNote: async (file, folderId, status = 'published') => {
+    const token = localStorage.getItem('pranks_token');
     const formData = new FormData();
     formData.append('file', file);
     if (folderId) formData.append('folder_id', folderId);
     formData.append('status', status);
 
+    const headers = {};
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
     const res = await fetch(`${BASE_URL}/upload/import-note`, {
       method: 'POST',
+      headers,
       body: formData,
       credentials: 'include',
     });
