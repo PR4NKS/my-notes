@@ -373,6 +373,21 @@ export default function AdminModal({
     }
   };
 
+  // Move note to trash (safe soft delete, not permanently deleted)
+  const handleTrashNote = async (id) => {
+    if (!id) return;
+    if (!confirm('Move this note to trash? The note is not deleted permanently and can be restored anytime from Trash Recovery.')) return;
+    try {
+      await notesApi.delete(id, false);
+      setSuccessMsg('Note moved to trash safely.');
+      await onRefreshData();
+      onSelectNote('index');
+      setCurrentView('dashboard');
+    } catch (err) {
+      setErrorMsg(err.message);
+    }
+  };
+
   // Permanent delete
   const handlePermanentDelete = async (id) => {
     if (!confirm('This will permanently delete this note. Cannot be undone!')) return;
@@ -691,10 +706,22 @@ export default function AdminModal({
                     {editId ? 'Edit Note' : 'Create New Note'}
                   </h3>
                   <div className="flex items-center gap-2">
+                    {editId && (
+                      <button
+                        type="button"
+                        onClick={() => handleTrashNote(editId)}
+                        disabled={isLoading}
+                        title="Move this note to trash (safe, can be restored anytime)"
+                        className="px-3 py-1.5 rounded-lg border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 text-xs font-medium flex items-center gap-1.5 transition"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                        <span>Move to Trash</span>
+                      </button>
+                    )}
                     <button
                       type="button"
                       onClick={() => setIsEditorPreview(!isEditorPreview)}
-                      className="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-200 text-xs font-medium flex items-center gap-1.5"
+                      className="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-800 text-xs font-medium flex items-center gap-1.5"
                     >
                       <Eye className="w-3.5 h-3.5" />
                       <span>{isEditorPreview ? 'Edit Raw' : 'Live Preview'}</span>

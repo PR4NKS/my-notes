@@ -1,7 +1,7 @@
 import React from 'react';
 import { 
   Calendar, Clock, Edit3, Share2, Tag, FileText, 
-  Download, Eye, CheckCircle2, AlertCircle, FileCode
+  Download, Eye, CheckCircle2, AlertCircle, FileCode, Trash2
 } from 'lucide-react';
 import MarkdownRenderer from './MarkdownRenderer.jsx';
 
@@ -25,6 +25,7 @@ export default function CenterPanel({
   isLoading,
   authStatus,
   onEditNote,
+  onTrashNote,
   onNavigateNote,
 }) {
   const [copiedLink, setCopiedLink] = React.useState(false);
@@ -106,14 +107,26 @@ export default function CenterPanel({
             </button>
 
             {authStatus?.isAuthenticated && (
-              <button
-                onClick={() => onEditNote(note)}
-                title="Edit Note"
-                className="px-3 py-1.5 rounded-lg bg-[#881337] hover:bg-[#9f1239] text-white text-xs font-medium transition shadow-sm flex items-center gap-1.5"
-              >
-                <Edit3 className="w-3.5 h-3.5" />
-                <span>Edit Note</span>
-              </button>
+              <>
+                {note.slug !== 'index' && (
+                  <button
+                    onClick={() => onTrashNote && onTrashNote(note)}
+                    title="Move note to trash (safe, can be restored anytime)"
+                    className="px-2.5 py-1.5 rounded-lg border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 text-xs font-medium transition flex items-center gap-1.5"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Trash</span>
+                  </button>
+                )}
+                <button
+                  onClick={() => onEditNote(note)}
+                  title="Edit Note"
+                  className="px-3 py-1.5 rounded-lg bg-[#881337] hover:bg-[#9f1239] text-white text-xs font-medium transition shadow-sm flex items-center gap-1.5"
+                >
+                  <Edit3 className="w-3.5 h-3.5" />
+                  <span>Edit Note</span>
+                </button>
+              </>
             )}
           </div>
         </div>

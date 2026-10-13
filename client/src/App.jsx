@@ -150,6 +150,19 @@ export default function App() {
     setIsMobileLeftOpen(false);
   };
 
+  const handleTrashCurrentNote = async (noteToTrash) => {
+    const targetId = noteToTrash?.id || currentNoteId;
+    if (!targetId || targetId === 'index') return;
+    if (!window.confirm(`Move "${noteToTrash?.title || 'this note'}" to trash? Note is not permanently deleted and can be restored anytime.`)) return;
+    try {
+      await notesApi.delete(targetId, false);
+      await refreshData();
+      handleSelectNote('index');
+    } catch (err) {
+      alert(`Failed to move note to trash: ${err.message}`);
+    }
+  };
+
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#cbd5e1] dark:bg-[#0f172a] text-slate-900 dark:text-slate-100 font-sans">
       {/* Mobile Top App Bar (visible only on small screens) */}
@@ -220,6 +233,7 @@ export default function App() {
           isLoading={isLoadingNote}
           authStatus={authStatus}
           onEditNote={handleEditCurrentNote}
+          onTrashNote={handleTrashCurrentNote}
           onNavigateNote={handleSelectNote}
         />
 
