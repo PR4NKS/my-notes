@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { 
   Search, Sun, Moon, BookOpen, ChevronDown, ChevronRight, 
   Folder, FolderOpen, FileText, Plus, Upload, Trash2, 
-  ShieldCheck, Shield, Lock, Settings
+  ShieldCheck, Shield, Lock, Settings, X
 } from 'lucide-react';
 
 export default function LeftSidebar({
@@ -17,6 +17,7 @@ export default function LeftSidebar({
   onOpenAdmin,
   onNewNote,
   onUploadNote,
+  onCloseMobile,
 }) {
   const [explorerOpen, setExplorerOpen] = useState(true);
   const [openFolders, setOpenFolders] = useState({});
@@ -100,9 +101,12 @@ export default function LeftSidebar({
               return (
                 <div
                   key={note.id}
-                  onClick={() => onSelectNote(note.id || note.slug)}
+                  onClick={() => {
+                    onSelectNote(note.id || note.slug);
+                    if (onCloseMobile) onCloseMobile();
+                  }}
                   style={{ paddingLeft: notePaddingLeft }}
-                  className={`flex items-center gap-2 py-1 px-2 rounded-md cursor-pointer transition text-[13px] ${
+                  className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition text-[13px] ${
                     isSelected
                       ? 'bg-[#881337]/15 dark:bg-[#fda4af]/15 text-[#881337] dark:text-[#fda4af] font-semibold border-l-2 border-[#881337] dark:border-[#fda4af]'
                       : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-300/40 dark:hover:bg-slate-800/40'
@@ -125,32 +129,47 @@ export default function LeftSidebar({
   };
 
   return (
-    <aside className="w-64 shrink-0 flex flex-col h-full bg-[#cbd5e1] dark:bg-[#1e293b] border-r border-slate-300 dark:border-slate-800 p-4 select-none overflow-y-auto">
+    <aside className="w-72 max-w-[85vw] md:w-64 shrink-0 flex flex-col h-full bg-[#cbd5e1] dark:bg-[#1e293b] border-r border-slate-300 dark:border-slate-800 p-4 select-none overflow-y-auto shadow-xl md:shadow-none">
       {/* Brand Header */}
       <div className="flex items-center justify-between mb-4">
         <h1 
-          onClick={() => onSelectNote('index')}
+          onClick={() => {
+            onSelectNote('index');
+            if (onCloseMobile) onCloseMobile();
+          }}
           className="text-2xl font-bold tracking-tight text-[#881337] dark:text-[#fda4af] cursor-pointer hover:opacity-90 transition font-sans"
         >
           Pranks
         </h1>
 
-        {authStatus?.isAuthenticated && (
+        <div className="flex items-center gap-1">
+          {authStatus?.isAuthenticated && (
+            <button
+              onClick={() => onOpenAdmin('dashboard')}
+              title="Admin Dashboard"
+              className="p-1.5 rounded-lg hover:bg-slate-300 dark:hover:bg-slate-700 text-[#881337] dark:text-[#fda4af] transition"
+            >
+              <ShieldCheck className="w-4 h-4" />
+            </button>
+          )}
+
+          {/* Mobile Close Button */}
           <button
-            onClick={() => onOpenAdmin('dashboard')}
-            title="Admin Dashboard"
-            className="p-1 rounded hover:bg-slate-300 dark:hover:bg-slate-700 text-[#881337] dark:text-[#fda4af]"
+            onClick={onCloseMobile}
+            title="Close explorer menu"
+            aria-label="Close explorer drawer"
+            className="md:hidden p-1.5 rounded-lg text-slate-600 dark:text-slate-300 hover:bg-slate-300/80 dark:hover:bg-slate-800 min-h-[36px] min-w-[36px] flex items-center justify-center transition"
           >
-            <ShieldCheck className="w-4 h-4" />
+            <X className="w-4 h-4" />
           </button>
-        )}
+        </div>
       </div>
 
-      {/* Search Bar & Action Buttons (Exact Replica of Screenshot) */}
+      {/* Search Bar & Action Buttons */}
       <div className="flex items-center gap-1.5 mb-5">
         <div 
           onClick={onOpenSearch}
-          className="flex-1 flex items-center gap-2 px-3 py-1.5 rounded-full border border-slate-400/80 dark:border-slate-700 bg-slate-200/50 dark:bg-slate-900/40 text-slate-500 hover:border-slate-500 cursor-pointer transition text-xs shadow-inner"
+          className="flex-1 flex items-center gap-2 px-3 py-2 rounded-full border border-slate-400/80 dark:border-slate-700 bg-slate-200/50 dark:bg-slate-900/40 text-slate-500 hover:border-slate-500 cursor-pointer transition text-xs shadow-inner"
         >
           <Search className="w-3.5 h-3.5 text-slate-500" />
           <span>Search</span>
@@ -160,16 +179,19 @@ export default function LeftSidebar({
         <button
           onClick={onToggleTheme}
           title={theme === 'dark' ? 'Switch to light mode' : 'Switch to dark mode'}
-          className="p-1.5 rounded-full border border-slate-400/80 dark:border-slate-700 hover:bg-slate-300 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition"
+          className="p-2 rounded-full border border-slate-400/80 dark:border-slate-700 hover:bg-slate-300 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition"
         >
           {theme === 'dark' ? <Sun className="w-3.5 h-3.5" /> : <Moon className="w-3.5 h-3.5" />}
         </button>
 
         {/* Documentation / Root Icon */}
         <button
-          onClick={() => onSelectNote('index')}
+          onClick={() => {
+            onSelectNote('index');
+            if (onCloseMobile) onCloseMobile();
+          }}
           title="Root Documentation"
-          className="p-1.5 rounded-full border border-slate-400/80 dark:border-slate-700 hover:bg-slate-300 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition"
+          className="p-2 rounded-full border border-slate-400/80 dark:border-slate-700 hover:bg-slate-300 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition"
         >
           <BookOpen className="w-3.5 h-3.5" />
         </button>
@@ -178,7 +200,7 @@ export default function LeftSidebar({
         <button
           onClick={() => onOpenAdmin(authStatus?.isAuthenticated ? 'dashboard' : 'login')}
           title={authStatus?.isAuthenticated ? 'Admin Dashboard' : 'Admin Login'}
-          className={`p-1.5 rounded-full border transition ${
+          className={`p-2 rounded-full border transition ${
             authStatus?.isAuthenticated
               ? 'border-[#881337] bg-rose-100 dark:bg-rose-950 text-[#881337] dark:text-[#fda4af]'
               : 'border-slate-400/80 dark:border-slate-700 hover:bg-slate-300 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300'
@@ -227,8 +249,11 @@ export default function LeftSidebar({
               return (
                 <div
                   key={note.id}
-                  onClick={() => onSelectNote(note.id || note.slug)}
-                  className={`flex items-center gap-2 py-1 px-2 rounded-md cursor-pointer transition text-[13.5px] ${
+                  onClick={() => {
+                    onSelectNote(note.id || note.slug);
+                    if (onCloseMobile) onCloseMobile();
+                  }}
+                  className={`flex items-center gap-2 py-1.5 px-2 rounded-md cursor-pointer transition text-[13.5px] ${
                     isSelected
                       ? 'bg-[#881337]/15 dark:bg-[#fda4af]/15 text-[#881337] dark:text-[#fda4af] font-semibold border-l-2 border-[#881337] dark:border-[#fda4af]'
                       : 'text-slate-700 dark:text-slate-300 hover:text-slate-900 dark:hover:text-slate-100 hover:bg-slate-300/40 dark:hover:bg-slate-800/40'

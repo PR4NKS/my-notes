@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { 
   Menu, X, Search, ShieldCheck, Sun, Moon, 
-  ChevronRight, ChevronLeft, Plus, Upload, BookOpen
+  ChevronRight, ChevronLeft, Plus, Upload, BookOpen, AlignRight
 } from 'lucide-react';
 import LeftSidebar from './components/LeftSidebar.jsx';
 import CenterPanel from './components/CenterPanel.jsx';
@@ -28,6 +28,7 @@ export default function App() {
   const [editingNoteData, setEditingNoteData] = useState(null);
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(true);
   const [isMobileLeftOpen, setIsMobileLeftOpen] = useState(false);
+  const [isMobileRightOpen, setIsMobileRightOpen] = useState(false);
 
   // Sync theme with document class
   useEffect(() => {
@@ -148,6 +149,7 @@ export default function App() {
   const handleSelectNote = (idOrSlug) => {
     loadNote(idOrSlug);
     setIsMobileLeftOpen(false);
+    setIsMobileRightOpen(false);
   };
 
   const handleTrashCurrentNote = async (noteToTrash) => {
@@ -165,39 +167,60 @@ export default function App() {
 
   return (
     <div className="flex flex-col h-screen w-screen overflow-hidden bg-[#cbd5e1] dark:bg-[#0f172a] text-slate-900 dark:text-slate-100 font-sans">
-      {/* Mobile Top App Bar (visible only on small screens) */}
-      <header className="md:hidden flex items-center justify-between px-4 py-2.5 bg-[#cbd5e1] dark:bg-[#1e293b] border-b border-slate-300 dark:border-slate-800">
+      {/* Mobile Top App Bar (Optimized for Touch & Single Hand Use) */}
+      <header className="md:hidden flex items-center justify-between px-3 py-2 bg-[#cbd5e1] dark:bg-[#1e293b] border-b border-slate-300 dark:border-slate-800 shrink-0 select-none z-20">
         <button
-          onClick={() => setIsMobileLeftOpen(!isMobileLeftOpen)}
-          className="p-1.5 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-800"
+          onClick={() => {
+            setIsMobileLeftOpen(!isMobileLeftOpen);
+            if (isMobileRightOpen) setIsMobileRightOpen(false);
+          }}
+          aria-label="Toggle explorer menu"
+          className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-300/80 dark:hover:bg-slate-800 active:scale-95 transition"
         >
           {isMobileLeftOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
         </button>
 
         <h1 
           onClick={() => handleSelectNote('index')}
-          className="text-lg font-bold text-[#881337] dark:text-[#fda4af] cursor-pointer"
+          className="text-lg font-bold text-[#881337] dark:text-[#fda4af] cursor-pointer tracking-tight"
         >
           Pranks
         </h1>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1">
           <button
             onClick={() => setIsSearchOpen(true)}
-            className="p-1.5 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-800"
+            aria-label="Search knowledge base"
+            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-300/80 dark:hover:bg-slate-800 active:scale-95 transition"
           >
             <Search className="w-4 h-4" />
           </button>
           <button
             onClick={toggleTheme}
-            className="p-1.5 rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-300 dark:hover:bg-slate-800"
+            aria-label="Toggle light or dark theme"
+            className="p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg text-slate-700 dark:text-slate-300 hover:bg-slate-300/80 dark:hover:bg-slate-800 active:scale-95 transition"
           >
             {theme === 'dark' ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+          </button>
+          <button
+            onClick={() => {
+              setIsMobileRightOpen(!isMobileRightOpen);
+              if (isMobileLeftOpen) setIsMobileLeftOpen(false);
+            }}
+            aria-label="Toggle outline and graph view"
+            title="Outline & Graph"
+            className={`p-2 min-h-[44px] min-w-[44px] flex items-center justify-center rounded-lg active:scale-95 transition ${
+              isMobileRightOpen 
+                ? 'bg-[#881337] text-white shadow-sm' 
+                : 'text-slate-700 dark:text-slate-300 hover:bg-slate-300/80 dark:hover:bg-slate-800'
+            }`}
+          >
+            <AlignRight className="w-4 h-4" />
           </button>
         </div>
       </header>
 
-      {/* Main 3-Column Layout Matching Screenshot */}
+      {/* Main 3-Column Layout */}
       <div className="flex flex-1 overflow-hidden relative">
         {/* Left Sidebar (Desktop + Mobile Drawer) */}
         <div className={`
@@ -216,10 +239,11 @@ export default function App() {
             onOpenAdmin={handleOpenAdmin}
             onNewNote={handleCreateNewNote}
             onUploadNote={handleUploadNotes}
+            onCloseMobile={() => setIsMobileLeftOpen(false)}
           />
         </div>
 
-        {/* Backdrop for mobile drawer */}
+        {/* Backdrop for mobile left drawer */}
         {isMobileLeftOpen && (
           <div
             onClick={() => setIsMobileLeftOpen(false)}
@@ -237,15 +261,30 @@ export default function App() {
           onNavigateNote={handleSelectNote}
         />
 
-        {/* Right Sidebar (Graph View & Table of Contents) */}
-        <RightSidebar
-          networkData={networkData}
-          currentNoteId={currentNoteId}
-          currentNote={currentNote}
-          onSelectNote={handleSelectNote}
-          isOpen={isRightSidebarOpen}
-          onToggleOpen={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
-        />
+        {/* Right Sidebar (Desktop side panel + Mobile drawer) */}
+        <div className={`
+          fixed md:static inset-y-0 right-0 z-40 transform transition-transform duration-200 ease-in-out md:transform-none
+          ${isMobileRightOpen ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}
+        `}>
+          <RightSidebar
+            networkData={networkData}
+            currentNoteId={currentNoteId}
+            currentNote={currentNote}
+            onSelectNote={handleSelectNote}
+            isOpen={isRightSidebarOpen}
+            onToggleOpen={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
+            isMobileOpen={isMobileRightOpen}
+            onCloseMobile={() => setIsMobileRightOpen(false)}
+          />
+        </div>
+
+        {/* Backdrop for mobile right drawer */}
+        {isMobileRightOpen && (
+          <div
+            onClick={() => setIsMobileRightOpen(false)}
+            className="fixed inset-0 z-30 bg-black/40 md:hidden"
+          />
+        )}
       </div>
 
       {/* Instant Search Overlay */}

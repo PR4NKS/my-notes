@@ -84,6 +84,12 @@ export default function MarkdownRenderer({ content, onNavigateNote }) {
       </div>`;
     };
 
+    // Responsive table container wrapper
+    renderer.table = function (token) {
+      const defaultTable = marked.Renderer.prototype.table.call(this, token);
+      return `<div class="table-wrapper">${defaultTable}</div>`;
+    };
+
     // Images with asset resolver
     renderer.image = function ({ href, title, text }) {
       const resolved = getAssetUrl(href);

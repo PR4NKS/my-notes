@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { ChevronDown, ChevronRight, Hash } from 'lucide-react';
 import { slugifyHeading } from './MarkdownRenderer.jsx';
 
-export default function TableOfContents({ content }) {
+export default function TableOfContents({ content, onHeadingClick }) {
   const [headings, setHeadings] = useState([]);
   const [activeId, setActiveId] = useState('');
   const [isCollapsed, setIsCollapsed] = useState(false);
@@ -59,6 +59,7 @@ export default function TableOfContents({ content }) {
     if (element) {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
       setActiveId(slug);
+      if (onHeadingClick) onHeadingClick();
     }
   };
 

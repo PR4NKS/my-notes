@@ -72,35 +72,36 @@ export default function CenterPanel({
 
   return (
     <main className="flex-1 flex flex-col h-full bg-[#cbd5e1] dark:bg-[#0f172a] overflow-y-auto">
-      <div className="max-w-4xl w-full mx-auto px-8 py-7">
-        {/* Top Header metadata matching screenshot */}
-        <div className="flex items-center justify-between pb-2 mb-2">
-          <div className="flex flex-col">
-            {/* Note title indicator matching Capture.JPG */}
-            <span className="text-xl font-medium text-slate-700 dark:text-slate-300 font-sans tracking-tight">
+      <div className="max-w-4xl w-full mx-auto px-4 py-4 sm:px-6 sm:py-6 md:px-8 md:py-7">
+        {/* Top Header metadata */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 mb-4 border-b border-slate-300/50 dark:border-slate-800">
+          <div className="flex flex-col min-w-0">
+            {/* Note title indicator */}
+            <span className="text-xl sm:text-2xl font-semibold text-slate-800 dark:text-slate-100 font-sans tracking-tight break-words">
               {note.title}
             </span>
 
-            {/* Date and reading time: "Dec 30, 2025, 3 min read" */}
-            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-0.5">
+            {/* Date and reading time */}
+            <div className="flex items-center gap-2 text-xs text-slate-500 dark:text-slate-400 mt-1 flex-wrap">
               <span>{formatDate(note.created_at)}</span>
               <span>•</span>
               <span>{note.reading_time || '3 min read'}</span>
 
               {note.status === 'draft' && (
-                <span className="ml-2 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200">
+                <span className="ml-1 text-[10px] font-bold uppercase tracking-wider px-1.5 py-0.5 rounded bg-amber-200 dark:bg-amber-900 text-amber-900 dark:text-amber-200">
                   Draft
                 </span>
               )}
             </div>
           </div>
 
-          {/* Action buttons */}
-          <div className="flex items-center gap-2">
+          {/* Action buttons with touch-friendly min targets */}
+          <div className="flex items-center gap-2 shrink-0 flex-wrap">
             <button
               onClick={handleCopyLink}
               title="Share / Copy Link"
-              className="p-1.5 rounded-lg bg-slate-200/80 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-300 text-slate-600 dark:text-slate-300 transition text-xs flex items-center gap-1.5"
+              aria-label="Share note link"
+              className="px-3 py-2 min-h-[38px] rounded-lg bg-slate-200/80 dark:bg-slate-800 border border-slate-300 dark:border-slate-700 hover:bg-slate-300 text-slate-700 dark:text-slate-300 transition text-xs font-medium flex items-center gap-1.5 active:scale-95"
             >
               <Share2 className="w-3.5 h-3.5" />
               <span>{copiedLink ? 'Copied' : 'Share'}</span>
@@ -112,7 +113,8 @@ export default function CenterPanel({
                   <button
                     onClick={() => onTrashNote && onTrashNote(note)}
                     title="Move note to trash (safe, can be restored anytime)"
-                    className="px-2.5 py-1.5 rounded-lg border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 text-xs font-medium transition flex items-center gap-1.5"
+                    aria-label="Move to trash"
+                    className="px-3 py-2 min-h-[38px] rounded-lg border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 text-xs font-medium transition flex items-center gap-1.5 active:scale-95"
                   >
                     <Trash2 className="w-3.5 h-3.5" />
                     <span>Trash</span>
@@ -121,7 +123,8 @@ export default function CenterPanel({
                 <button
                   onClick={() => onEditNote(note)}
                   title="Edit Note"
-                  className="px-3 py-1.5 rounded-lg bg-[#881337] hover:bg-[#9f1239] text-white text-xs font-medium transition shadow-sm flex items-center gap-1.5"
+                  aria-label="Edit note"
+                  className="px-3.5 py-2 min-h-[38px] rounded-lg bg-[#881337] hover:bg-[#9f1239] text-white text-xs font-medium transition shadow-sm flex items-center gap-1.5 active:scale-95"
                 >
                   <Edit3 className="w-3.5 h-3.5" />
                   <span>Edit Note</span>

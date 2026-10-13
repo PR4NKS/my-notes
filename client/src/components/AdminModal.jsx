@@ -404,26 +404,27 @@ export default function AdminModal({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in duration-200">
-      <div className="w-full max-w-4xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl shadow-2xl flex flex-col h-[85vh] overflow-hidden">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-slate-900/70 backdrop-blur-sm animate-in fade-in duration-200">
+      <div className="w-full max-w-4xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-800 rounded-xl shadow-2xl flex flex-col h-[90vh] sm:h-[85vh] overflow-hidden">
         {/* Top Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950">
-          <div className="flex items-center gap-2.5">
+        <div className="flex items-center justify-between px-4 py-3 sm:px-6 sm:py-4 border-b border-slate-300 dark:border-slate-800 bg-white dark:bg-slate-950 shrink-0">
+          <div className="flex items-center gap-2 sm:gap-2.5">
             <Shield className="w-5 h-5 text-[#881337] dark:text-[#fda4af]" />
-            <span className="font-bold text-lg text-slate-800 dark:text-slate-100">
+            <span className="font-bold text-base sm:text-lg text-slate-800 dark:text-slate-100">
               Pranks Administration
             </span>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {authStatus?.isAuthenticated && (
-              <span className="text-xs px-2.5 py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-medium">
+              <span className="text-[11px] sm:text-xs px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-emerald-100 dark:bg-emerald-950 text-emerald-800 dark:text-emerald-300 font-medium">
                 Admin: {authStatus.user?.username}
               </span>
             )}
             <button
               onClick={onClose}
-              className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
+              aria-label="Close admin modal"
+              className="p-1 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 min-h-[36px] min-w-[36px] flex items-center justify-center transition"
             >
               <X className="w-5 h-5" />
             </button>
@@ -432,7 +433,7 @@ export default function AdminModal({
 
         {/* Global Feedback Banner */}
         {errorMsg && (
-          <div className="px-6 py-2.5 bg-rose-100 dark:bg-rose-950/80 border-b border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-200 text-xs flex items-center justify-between">
+          <div className="px-4 py-2 sm:px-6 sm:py-2.5 bg-rose-100 dark:bg-rose-950/80 border-b border-rose-300 dark:border-rose-800 text-rose-800 dark:text-rose-200 text-xs flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
               <AlertCircle className="w-4 h-4 shrink-0" />
               <span>{errorMsg}</span>
@@ -441,7 +442,7 @@ export default function AdminModal({
           </div>
         )}
         {successMsg && (
-          <div className="px-6 py-2.5 bg-emerald-100 dark:bg-emerald-950/80 border-b border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs flex items-center justify-between">
+          <div className="px-4 py-2 sm:px-6 sm:py-2.5 bg-emerald-100 dark:bg-emerald-950/80 border-b border-emerald-300 dark:border-emerald-800 text-emerald-800 dark:text-emerald-200 text-xs flex items-center justify-between shrink-0">
             <div className="flex items-center gap-2">
               <CheckCircle2 className="w-4 h-4 shrink-0" />
               <span>{successMsg}</span>
@@ -451,13 +452,13 @@ export default function AdminModal({
         )}
 
         {/* Main Body */}
-        <div className="flex flex-1 overflow-hidden">
+        <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
           {/* Navigation Tabs (if authenticated) */}
           {authStatus?.isAuthenticated && (
-            <div className="w-56 shrink-0 bg-slate-200/60 dark:bg-slate-950/60 border-r border-slate-300 dark:border-slate-800 p-3 flex flex-col gap-1 select-none">
+            <div className="w-full md:w-56 shrink-0 bg-slate-200/60 dark:bg-slate-950/60 border-b md:border-b-0 md:border-r border-slate-300 dark:border-slate-800 p-2 md:p-3 flex flex-row md:flex-col gap-1 overflow-x-auto md:overflow-y-auto select-none">
               <button
                 onClick={() => setCurrentView('dashboard')}
-                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition ${
+                className={`whitespace-nowrap shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition ${
                   currentView === 'dashboard'
                     ? 'bg-[#881337] text-white shadow-sm'
                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-800'
@@ -472,7 +473,7 @@ export default function AdminModal({
                   populateEditor(null);
                   setCurrentView('editor');
                 }}
-                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition ${
+                className={`whitespace-nowrap shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition ${
                   currentView === 'editor'
                     ? 'bg-[#881337] text-white shadow-sm'
                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-800'
@@ -484,7 +485,7 @@ export default function AdminModal({
 
               <button
                 onClick={() => setCurrentView('upload')}
-                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition ${
+                className={`whitespace-nowrap shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition ${
                   currentView === 'upload'
                     ? 'bg-[#881337] text-white shadow-sm'
                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-800'
@@ -496,7 +497,7 @@ export default function AdminModal({
 
               <button
                 onClick={() => setCurrentView('folders')}
-                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition ${
+                className={`whitespace-nowrap shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition ${
                   currentView === 'folders'
                     ? 'bg-[#881337] text-white shadow-sm'
                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-800'
@@ -508,7 +509,7 @@ export default function AdminModal({
 
               <button
                 onClick={() => setCurrentView('trash')}
-                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition ${
+                className={`whitespace-nowrap shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition ${
                   currentView === 'trash'
                     ? 'bg-[#881337] text-white shadow-sm'
                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-800'
@@ -520,7 +521,7 @@ export default function AdminModal({
 
               <button
                 onClick={() => setCurrentView('settings')}
-                className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-xs font-medium transition ${
+                className={`whitespace-nowrap shrink-0 flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-medium transition ${
                   currentView === 'settings'
                     ? 'bg-[#881337] text-white shadow-sm'
                     : 'text-slate-600 dark:text-slate-400 hover:bg-slate-300 dark:hover:bg-slate-800'
@@ -530,10 +531,10 @@ export default function AdminModal({
                 <span>Change Password</span>
               </button>
 
-              <div className="mt-auto pt-3 border-t border-slate-300 dark:border-slate-800">
+              <div className="md:mt-auto md:pt-3 md:border-t border-slate-300 dark:border-slate-800 shrink-0">
                 <button
                   onClick={handleLogout}
-                  className="flex items-center gap-2.5 w-full px-3 py-2 rounded-lg text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950 transition"
+                  className="whitespace-nowrap flex items-center gap-2 w-full px-3 py-2 rounded-lg text-xs font-medium text-rose-600 dark:text-rose-400 hover:bg-rose-100 dark:hover:bg-rose-950 transition"
                 >
                   <LogOut className="w-4 h-4" />
                   <span>Logout</span>
@@ -543,7 +544,7 @@ export default function AdminModal({
           )}
 
           {/* Tab Content Panel */}
-          <div className="flex-1 overflow-y-auto p-6 bg-slate-50 dark:bg-slate-900">
+          <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-slate-50 dark:bg-slate-900">
             {/* VIEW: LOGIN / SETUP */}
             {(!authStatus?.isAuthenticated || currentView === 'login') && (
               <div className="max-w-md mx-auto my-8">
@@ -701,18 +702,18 @@ export default function AdminModal({
             {/* VIEW: NOTE EDITOR */}
             {authStatus?.isAuthenticated && currentView === 'editor' && (
               <form onSubmit={handleSaveNote} className="flex flex-col h-full gap-3">
-                <div className="flex items-center justify-between">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 pb-2 border-b border-slate-200 dark:border-slate-800">
                   <h3 className="text-base font-bold text-slate-800 dark:text-slate-100">
                     {editId ? 'Edit Note' : 'Create New Note'}
                   </h3>
-                  <div className="flex items-center gap-2">
+                  <div className="flex flex-wrap items-center gap-2">
                     {editId && (
                       <button
                         type="button"
                         onClick={() => handleTrashNote(editId)}
                         disabled={isLoading}
                         title="Move this note to trash (safe, can be restored anytime)"
-                        className="px-3 py-1.5 rounded-lg border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 text-xs font-medium flex items-center gap-1.5 transition"
+                        className="px-3 py-1.5 min-h-[36px] rounded-lg border border-rose-300 dark:border-rose-800 bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/60 text-rose-700 dark:text-rose-300 text-xs font-medium flex items-center gap-1.5 transition active:scale-95"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                         <span>Move to Trash</span>
@@ -721,7 +722,7 @@ export default function AdminModal({
                     <button
                       type="button"
                       onClick={() => setIsEditorPreview(!isEditorPreview)}
-                      className="px-3 py-1.5 rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-800 text-xs font-medium flex items-center gap-1.5"
+                      className="px-3 py-1.5 min-h-[36px] rounded-lg border border-slate-300 dark:border-slate-700 hover:bg-slate-200 dark:hover:bg-slate-800 text-xs font-medium flex items-center gap-1.5 active:scale-95 transition"
                     >
                       <Eye className="w-3.5 h-3.5" />
                       <span>{isEditorPreview ? 'Edit Raw' : 'Live Preview'}</span>
@@ -729,7 +730,7 @@ export default function AdminModal({
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="px-4 py-1.5 bg-[#881337] hover:bg-[#9f1239] text-white text-xs font-semibold rounded-lg transition shadow flex items-center gap-1.5"
+                      className="px-4 py-1.5 min-h-[36px] bg-[#881337] hover:bg-[#9f1239] text-white text-xs font-semibold rounded-lg transition shadow flex items-center gap-1.5 active:scale-95"
                     >
                       {isLoading ? <Loader2 className="w-3.5 h-3.5 animate-spin" /> : <Save className="w-3.5 h-3.5" />}
                       <span>Save Note</span>

@@ -64,13 +64,13 @@ export default function SearchModal({ isOpen, onClose, onSelectNote }) {
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center pt-20 px-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150">
+    <div className="fixed inset-0 z-50 flex items-start justify-center pt-4 sm:pt-16 px-3 sm:px-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-150">
       <div 
-        className="w-full max-w-2xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[75vh]"
+        className="w-full max-w-2xl bg-slate-100 dark:bg-slate-900 border border-slate-300 dark:border-slate-700 rounded-xl shadow-2xl overflow-hidden flex flex-col max-h-[85vh] sm:max-h-[75vh]"
         onKeyDown={handleKeyDown}
       >
         {/* Search Input Bar */}
-        <div className="flex items-center gap-3 px-4 py-3.5 border-b border-slate-300 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80">
+        <div className="flex items-center gap-3 px-3.5 py-3 sm:px-4 sm:py-3.5 border-b border-slate-300 dark:border-slate-800 bg-white/80 dark:bg-slate-950/80">
           <Search className="w-5 h-5 text-slate-400 shrink-0" />
           <input
             ref={inputRef}
@@ -78,12 +78,13 @@ export default function SearchModal({ isOpen, onClose, onSelectNote }) {
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search notes, attack vectors, commands, folders, tags..."
-            className="w-full bg-transparent text-slate-800 dark:text-slate-100 placeholder-slate-400 text-base focus:outline-none"
+            className="w-full bg-transparent text-slate-800 dark:text-slate-100 placeholder-slate-400 text-sm sm:text-base focus:outline-none"
           />
           {isLoading && <Loader2 className="w-4 h-4 animate-spin text-slate-400 shrink-0" />}
           <button
             onClick={onClose}
-            className="p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
+            aria-label="Close search"
+            className="p-1.5 min-h-[38px] min-w-[38px] flex items-center justify-center rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition"
           >
             <X className="w-5 h-5" />
           </button>
